@@ -1,0 +1,14 @@
+sessions:
+  production_read:                          #<session>
+    account: 012345678910
+    role: read-only
+    source_profile: <source_profile>        # Profile with assume role access into the account
+    target_profile: <target_profile>        # Destination profile in aws config file
+  staging:
+    account: 109876543210
+    role: super-admin
+    source_profile: <source_profile>
+  development:
+    account: 567891001234
+    role: developer
+    source_profile: <source_profile>
