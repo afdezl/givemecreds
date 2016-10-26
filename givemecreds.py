@@ -49,13 +49,14 @@ def arn(account, role):
         role=role)
 
 
-def generate_credentials(arn, session_name, profile):
+def generate_credentials(arn, session_name, profile, export_profile=False):
     os.environ["AWS_DEFAULT_PROFILE"] = profile
     sts_client = boto3.client('sts')
     response = sts_client.assume_role(
         RoleArn=arn,
         RoleSessionName=session_name)
-    os.environ["AWS_DEFAULT_PROFILE"] = ""
+    if export_profile is False:
+        os.environ["AWS_DEFAULT_PROFILE"] = ""
     return response["Credentials"]
 
 
@@ -85,7 +86,8 @@ def main(args):
     credentials = generate_credentials(
         arn(config["account"], config["role"]),
         config.get("target_profile", "temp_profile"),
-        config["source_profile"])
+        config["source_profile"],
+        export_profile=args.export_profile)
     if config.get("target_profile"):
         replace_aws_config(
             config["target_profile"],
@@ -104,5 +106,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
     parser.add_argument(
         'session', type=str, help="session name")
+    parser.add_argument(
+        '--export-profile', action='store_true',
+        help="exports the target profile to the AWS_DEFAULT_PROFILE variable"
+    )
     args = parser.parse_args()
     main(args)
