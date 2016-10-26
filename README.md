@@ -18,6 +18,11 @@ Alternatively it can be sourced via an alias in your `.zshrc` or `.bashrc`:
 alias givemecreds="/path/to/givemecreds.py"
 ```
 
+The script also supports exporting the generated profile as the AWS_DEFAULT_PROFILE:
+
+```bash
+givemecreds <session> --export-profile
+```
 
 ### Config structure
 
