@@ -8,6 +8,7 @@ import boto3
 import ConfigParser
 import yaml
 import os
+import sys
 
 
 # SESSION CONFIG location relative to this script
@@ -27,11 +28,19 @@ REQUISITES = {
 
 class RequiredParameterException(Exception):
     "Exception is raised when a required parameter is missing from the config"
+    pass
 
 
-def load_config(session_name, location=SESSION_CONFIG_LOCATION):
+def load_config(session_name, show=False, location=SESSION_CONFIG_LOCATION):
     with open(os.path.join(os.path.dirname(__file__), location), 'r') as f:
         config = yaml.load(f)
+        if show:
+            print(
+                "Configured sessions:\n{0}".format(
+                    config.get("sessions", {}).keys()
+                )
+            )
+            sys.exit(0)
     return config["sessions"][session_name]
 
 
@@ -81,7 +90,7 @@ def replace_aws_config(profile, credentials, aws_config=AWS_CONFIG_LOCATION):
 
 
 def main(args):
-    config = load_config(args.session)
+    config = load_config(args.session, show=args.list)
     check_config(config)
     credentials = generate_credentials(
         arn(config["account"], config["role"]),
@@ -105,7 +114,9 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
     parser.add_argument(
-        'session', type=str, help="session name")
+        'session', type=str, nargs='?', help="session name")
+    parser.add_argument(
+        '--list', action='store_true', help="session name")
     parser.add_argument(
         '--export-profile', action='store_true',
         help="exports the target profile to the AWS_DEFAULT_PROFILE variable"
