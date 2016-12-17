@@ -1,10 +1,14 @@
 # givemecreds
 
-**givemecreds** is a simple python script to get temporary sts credentials added into an aws config file.
+**givemecreds** is a simple python script to retrieve and store AWS STS credentiale.
+
+It is thought to be used where a logging account is configured or to provide STS credentials to other tools like *test-kitchen*.
+
 
 The script is managed by a configuration file `sessionconfig.yml` that allows to set up multiple profiles to quickly assume different roles in one or multiple accounts.
 
 **NOTE: It is recommended to make a copy of your `~/.aws/config` file before proceeding with this script.**
+
 
 ## Usage
 
@@ -24,15 +28,15 @@ The script also supports exporting the generated profile as the AWS_DEFAULT_PROF
 givemecreds <session> --export-profile
 ```
 
-### Config structure
+## Profiles Setup
 
-```yaml
+```
 sessions:
-  production_read:                          #<session>
+  <session>:                          
     account: 012345678910
     role: read-only
-    source_profile: <source_profile>        # Profile with assume role access into the account
-    target_profile: <target_profile>        # Destination profile in aws config file
+    source_profile: <source_profile>        
+    target_profile: <target_profile>
   staging:
     account: 109876543210
     role: super-admin
@@ -43,20 +47,29 @@ sessions:
     source_profile: <source_profile>
 ```
 
-The structure of the aws crendentials and config files result in:
+Where:
+
+* `<session>` **[REQUIRED]** is simply the name of the session to be called via `$ givemecreds <session>`
+* `account` **[REQUIRED]** is the account in which the STS session is assumed
+* `role` **[REQUIRED]** is the role that is being targeted in the account
+* `source_profile` **[REQUIRED]** is the profile configured in your `~/.aws/config` that has assume role capabilites in the destination account.
+* `target` **[OPTIONAL]** is an empty profile within the `~/.aws/config` that contains the basic STS required keys and that will be populated by the script. This should be setup if the generated credentials are to be used with other tools.
+
 
 `~/.aws/config`
 ```bash
-[source_profile]
+[profile source_profile]
 region = eu-west-1
 mfa_serial = ...
 output = json
 ```
 
-`~/.aws/config`
+Upon first setup, the target profile must be configured as follows in your `~/.aws/config`:
+
+
 ```bash
-[profile target_profile]
-aws_access_key_id = ...
-aws_secret_access_key = ...
-aws_session_token = ...
+[profile <target_profile>]
+aws_access_key_id =
+aws_secret_access_key =
+aws_session_token =
 ```
